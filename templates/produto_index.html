@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=devic-width, initial-scale=1.0">
+    <title>Gerenciar Produtos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .box {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .title.is-1 {
+            color: #3273dc;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .button.is-primary {
+            background-color: #3273dc;
+        }
+
+        .button.is-danger {
+            background-color: #ff3860;
+        }
+
+        .button.is-info {
+            background-color: #23d160;
+        }
+
+        .button.is-loading::after {
+            border-color: transparent transparent #fff #fff !important;
+        }
+
+        @media screen and (max-width: 768px) {
+            .columns.is-mobile > .column {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+
+    <div class="container is-max-desktop">
+        <h1 class="title is-1 has-text-centered">Produtos</h1>
+        <div class="buttons is-centered">
+            <button class="button is-primary is-rounded" onclick="window.location.href='http://127.0.0.1:5000/'">
+                    <span class="icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </span>
+                <span>Voltar</span>
+            </button>
+        </div>
+
+        <!-- Formulário de Cadastro para produtos --->
+        <div class="box">
+            <form id="form_cadastro">
+                <h2 class="title is-4">Cadastrar Produtos</h2>
+                <div class="field">
+                    <label class="label" for="nome_cadastro">Nome:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" id="nome_cadastro" name="nome" placeholder="Produto:" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-box"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="descricao_cadastro_cadastro">Descrição:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" id="descricao_cadastro" name="descricao"
+                               placeholder="Descrição:" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="preco_cadastro">Valor:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="preco_cadastro" name="preco" placeholder="Valor: "
+                               required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-dollar-sign"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <input class="button is-primary is-rounded" type="submit" value="Enviar" id="enviar_cadastro">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabela para listar produtos --->
+        <div class="box">
+            <h2 class="title is-4">Listar Produtos</h2>
+            <button class="button is-info is-rounded" id="Carregar_btn" onclick="fetchDataProduto()">
+                    <span class="icon">
+                        <i class="fas fa-list"></i>
+                    </span>
+                <span>Listar</span>
+            </button>
+            <button class="button is-light is-rounded" id="voltar_btn" onclick="resetTable()">
+                    <span class="icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </span>
+                <span>Voltar</span>
+            </button>
+            <div id="table_container" class="hidden">
+                <table class="table is-striped is-hoverable is-fullwidth" id="data_table">
+                    <thead>
+                    <tr id="header_row"></tr>
+                    </thead>
+                    <tbody id="table_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Formulário para Atualizar cadastro de produtos --->
+        <div class="box">
+            <form id="form_atualizar">
+                <h2 class="title is-4">Atualizar Produto</h2>
+                <div class="field">
+                    <label class="label" for="id_atualizar">ID</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="id_atualizar" name="id" placeholder="Digite o ID"
+                               required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-id-badge"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="nome_atualizar">Nome:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" id="nome_atualizar" name="nome"
+                               placeholder="Digite o nome do produto" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-box"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="descricao_atualizar">Descrição:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" id="descricao_atualizar" name="descricao"
+                               placeholder="Digite a descrição" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-info-circle"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="label" for="valor_atualizar">Valor:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="valor_atualizar" name="preco"
+                               placeholder="Digite o valor" min="0" step="0.01" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-dollar-sign"></i>
+                            </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <input class="button is-primary is-rounded" type="submit" value="Enviar" id="enviar_atualizar">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Formulário para deletar cadastro Produto -->
+        <div class="box">
+            <h2 class="title is-4">Deletar</h2>
+            <form id="form_deletar">
+                <div class="field">
+                    <label class="label" for="id_deletar">ID:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="id_deletar" name="id"
+                               placeholder="Digite o ID do produto" required>
+                        <span class="icon is-small is-left">
+                                <i class="fas fa-trash-alt"></i>
+                            </span>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-danger is-rounded" type="submit">
+                                <span class="icon">
+                                    <i class="fas fa-trash-alt"></i>
+                                </span>
+                            <span>Deletar</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='produto.js') }}"></script>
+</body>
+</html>

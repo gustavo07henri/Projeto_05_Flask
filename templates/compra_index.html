@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar compras</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .box {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .title.is-1 {
+            color: #3273dc;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .button.is-primary {
+            background-color: #3273dc;
+        }
+
+        .button.is-danger {
+            background-color: #ff3860;
+        }
+
+        .button.is-info {
+            background-color: #23d160;
+        }
+
+        .button.is-loading::after {
+            border-color: transparent transparent #fff #fff !important;
+        }
+
+        @media screen and (max-width: 768px) {
+            .columns.is-mobile > .column {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="container">
+        <h1 class="title is-1 has-text-centered">Compras</h1>
+        <div class="buttons is-centered">
+            <button class="button is-primary is-rounded" onclick="window.location.href='http://127.0.0.1:5000/'">
+                <span class="icon">
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+                <span>Voltar</span>
+            </button>
+        </div>
+
+        <!-- Formulário para Cadastro de Compra -->
+        <div class="box">
+            <form id="form_cadastro">
+                <h2 class="title is-4">Cadastrar Compras</h2>
+                <div class="field">
+                    <label class="label" for="id_cliente">ID do Cliente:</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="id_cliente" name="id_cliente" placeholder="ID do Cliente"
+                               required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="produtos_container">
+                    <div class="produto_field mb-4">
+                        <div class="columns is-mobile">
+                            <div class="column">
+                                <label class="label" for="id_produto_1">ID do Produto:</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="number" id="id_produto_1" name="produtos[0][id_produto]"
+                                           placeholder="ID do Produto" required>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-box"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <label class="label" for="quantidade_1">Quantidade:</label>
+                                <div class="control has-icons-left">
+                                    <input class="input" type="number" id="quantidade_1" name="produtos[0][quantidade]"
+                                           placeholder="Quantidade" min="1" required>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-sort-numeric-up"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button type="button" class="button is-info is-rounded" id="adicionar_produto"
+                                onclick="adicionarProduto()">
+                            <span class="icon">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span>Adicionar Outro Produto</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <input class="button is-primary is-rounded" type="submit" value="Enviar" id="enviar_cadastro">
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Formulário para Filtros Consulta -->
+        <div class="box">
+            <h2 class="title is-4">Listar Compras</h2>
+
+            <form id="form_consultar" class="column">
+                <div class="field">
+                    <div class="Colum is-12-mobile is-4-tablet">
+                        <label for="id_cliente_consulta">ID do Cliente</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="number" id="id_cliente_consulta" name="id_cliente"
+                                   placeholder="ID do Cliente">
+                            <span class="icon is-small is-left">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        </div>
+                    </div>
+
+                    <div class="Colum is-12-mobile is-4-tablet">
+                        <label for="id_produto_consulta">ID do Produto</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="number" id="id_produto_consulta" name="id_produto"
+                                   placeholder="ID do Produto">
+                            <span class="icon is-small is-left">
+                            <i class="fas fa-box"></i>
+                        </span>
+                        </div>
+                    </div>
+
+                    <div class="Colum is-12-mobile is-4-tablet">
+                        <label for="id_compra_consulta">ID da Compra</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="number" id="id_compra_consulta" name="id_compra"
+                                   placeholder="ID da Compra">
+                            <span class="icon is-small is-left">
+                            <i class="fas fa-shopping-cart"></i>
+                        </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class=field">
+                    <div class="control">
+                        <input class="button is-primary is-rounded" type="submit" value="Enviar" id="enviar_atualizar">
+                    </div>
+                </div>
+            </form>
+
+            <!-- Tabela para listagem de Compras -->
+            <div id="table_container" class="hidden">
+                <div class="buttons is-centered">
+                    <button class="button is-info is-rounded" id="recarregar_btn" onclick="fetchData()">
+                        <span class="icon">
+                            <i class="fas fa-sync-alt"></i>
+                        </span>
+                        <span>Listar</span>
+                    </button>
+                    <button class="button is-light is-rounded" id="voltar_btn" onclick="resetTable()">
+                        <span class="icon">
+                            <i class="fas fa-arrow-left"></i>
+                        </span>
+                        <span>Voltar</span>
+                    </button>
+                </div>
+                <table class="table is-striped is-hoverable is-fullwidth" id="data_table">
+                    <thead>
+                    <tr id="header_row"></tr>
+                    </thead>
+                    <tbody id="table_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Formulário para Deletar Compra -->
+        <div class="box">
+            <h2 class="title is-4">Deletar</h2>
+            <form id="form_deletar">
+                <div class="field">
+                    <label class="label" for="id_deletar">ID da Compra</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="number" id="id_deletar" name="id" placeholder="Digite o ID" required>
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-trash-alt"></i>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-danger is-rounded" type="submit">
+                                <span class="icon">
+                                <i class="fas fa-trash-alt"></i>
+                                </span>
+                            <span>Deletar</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='compra.js') }}"></script>
+</body>
+</html>
