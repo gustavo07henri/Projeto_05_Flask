@@ -136,7 +136,7 @@
                                    placeholder="ID do Cliente">
                             <span class="icon is-small is-left">
                             <i class="fas fa-user"></i>
-                        </span>
+                            </span>
                         </div>
                     </div>
 
@@ -147,7 +147,7 @@
                                    placeholder="ID do Produto">
                             <span class="icon is-small is-left">
                             <i class="fas fa-box"></i>
-                        </span>
+                            </span>
                         </div>
                     </div>
 
@@ -157,10 +157,29 @@
                             <input class="input" type="number" id="id_compra_consulta" name="id_compra"
                                    placeholder="ID da Compra">
                             <span class="icon is-small is-left">
-                            <i class="fas fa-shopping-cart"></i>
-                        </span>
+                            <i class="fas fa-id-badge"></i>
+                            </span>
                         </div>
                     </div>
+
+                    <div class="Colum is-12-mobile is-4-tablet">
+                        <label for="data_inicial_consulta">Data Inicial</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="date" id="data_inicial_consulta" name="data_inicial"
+                                   placeholder="Data Inicial">
+                            <span class="icon is-small is-left"></span>
+                        </div>
+                    </div>
+
+                    <div class="Colum is-12-mobile is-4-tablet">
+                        <label for="data_final_consulta">Data Final</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="date" id="data_final_consulta" name="data_final"
+                                   placeholder="Data Inicial">
+                            <span class="icon is-small is-left"></span>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class=field">
@@ -191,6 +210,36 @@
                     <tr id="header_row"></tr>
                     </thead>
                     <tbody id="table_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tabela para exibição de relátorio de venda produtos -->
+
+        <div class="box">
+            <h2 class="title is-4">Relatorio Venda produtos</h2>
+            <div class="buttons is-centered">
+                <button class="button is-info is-rounded" id="recarregar_btn_relatorio" onclick="fetchDataRelatorio()">
+                    <span class="icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </span>
+                    <span>Listar</span>
+                </button>
+                <button class="button is-light is-rounded" id="voltar_btn" onclick="resetTableRelatorio()">
+                    <span class="icon">
+                        <i class="fas fa-arrow-left"></i>
+                    </span>
+                    <span>Voltar</span>
+                </button>
+            </div>
+
+
+            <div id="table_container_relatorio" class="hidden">
+                <table class="table is-striped is-hoverable is-fullwidth" id="data_table">
+                    <thead>
+                    <tr id="header_row_relatorio"></tr>
+                    </thead>
+                    <tbody id="table_body_relatorio"></tbody>
                 </table>
             </div>
         </div>

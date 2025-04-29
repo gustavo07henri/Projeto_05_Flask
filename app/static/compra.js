@@ -236,6 +236,8 @@ function resetTable() {
 }
 
 formDeletar.addEventListener('submit', async (event) => {
+    // Deleta a compra do banco de dados
+
     event.preventDefault();
     const deleteId = document.getElementById('id_deletar');
     const button = document.querySelector('.button.is-danger');
@@ -267,6 +269,8 @@ let produtoCount = 1
 const maxProdutos = 6
 
 function adicionarProduto() {
+    // Adiciona os campos para adicionar produto na compra. Máximo de 6 produtos
+
     if (produtoCount >= maxProdutos) {
         alert("Numero máximo de produtos atingidos (6)");
         return;
@@ -307,9 +311,13 @@ function adicionarProduto() {
 document.getElementById('form_consultar').addEventListener('submit', async function (event) {
     event.preventDefault();
 
+    // Adiciona os filtros na requisição, e depois faz a chamada do metodo que recebe os dados e exibe na tabela
+
     const idCliente = document.getElementById('id_cliente_consulta').value.trim();
     const idProduto = document.getElementById('id_produto_consulta').value.trim();
     const idCompra = document.getElementById('id_compra_consulta').value.trim();
+    const dataInicial = document.getElementById('data_inicial_consulta').value.trim();
+    const dataFinal = document.getElementById('data_final_consulta').value.trim();
 
     const filtros = {};
 
@@ -318,21 +326,82 @@ document.getElementById('form_consultar').addEventListener('submit', async funct
     } else {
         if (idCliente) filtros.id_cliente = Number(idCliente);
         if (idProduto) filtros.id_produto = Number(idProduto);
+        if (dataInicial) filtros.data_inicial = String(dataInicial);
+        if (dataFinal) filtros.data_final = String(dataFinal);
     }
 
     await fetchData(Object.keys(filtros).length > 0 ? filtros : null);
 });
 
 document.getElementById('id_compra_consulta').addEventListener('input', function () {
+    // Desabilita os campos de quando idCompra esta incluido na consulta
     const idCompra = this.value.trim();
     const idClienteInput = document.getElementById('id_cliente_consulta');
     const idProdutoInput = document.getElementById('id_produto_consulta');
+    const dataInicial = document.getElementById('data_inicial_consulta');
+    const dataFinal = document.getElementById('data_final_consulta');
 
     if (idCompra) {
         idClienteInput.disabled = true;
         idProdutoInput.disabled = true;
+        dataFinal.disabled = true;
+        dataInicial.disabled = true;
     } else {
         idClienteInput.disabled = false;
         idProdutoInput.disabled = false;
+        dataFinal.disabled = false;
+        dataInicial.disabled = false;
     }
 });
+
+async function fetchDataRelatorio() {
+    try {
+        // Mostra a tabela e esconde o botão "Listar"
+        document.getElementById("table_container_relatorio").classList.remove("hidden");
+        document.getElementById("recarregar_btn_relatorio").classList.add("hidden");
+
+        // Limpa a tabela
+        document.getElementById('header_row_relatorio').innerHTML = '';
+        document.getElementById('table_body_relatorio').innerHTML = '';
+
+        // Busca os dados
+        const response = await fetch('http://127.0.0.1:5000/compras/relatorio/vendas_por_produto');
+        const data = await response.json();
+
+        if (data.length > 0) {
+            // Cria o cabeçalho
+            const headers = Object.keys(data[0]);
+            const headerRow = document.getElementById("header_row_relatorio");
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header.toUpperCase();
+                headerRow.appendChild(th);
+            });
+
+            // Preenche o corpo da tabela
+            const tableBody = document.getElementById('table_body_relatorio');
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                headers.forEach(header => {
+                    const td = document.createElement('td');
+                    td.textContent = item[header] || '-';
+                    row.appendChild(td);
+                });
+                tableBody.appendChild(row);
+            });
+        } else {
+            const tableBody = document.getElementById('table_body_relatorio');
+            tableBody.innerHTML = '<tr><td colspan="100%">Nenhum cliente encontrado</td></tr>';
+        }
+    } catch (err) {
+        console.error('Erro:', err);
+        const tableBody = document.getElementById('table_body_relatorio');
+        tableBody.innerHTML = '<tr><td colspan="100%">Erro ao carregar dados</td></tr>';
+    }
+}
+
+function resetTableRelatorio() {
+    document.getElementById('table_container_relatorio').classList.add('hidden');
+    document.getElementById('header_row_relatorio').innerHTML = '';
+    document.getElementById('table_body_relatorio').innerHTML = '';
+}

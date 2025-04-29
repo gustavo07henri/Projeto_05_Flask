@@ -1,6 +1,7 @@
 from datetime import datetime
 from app import db
 from flask import Blueprint, jsonify, render_template, request
+from sqlalchemy import func
 
 from app.models import Cliente, Produto, CompraProduto
 from app.models.compra import Compra
@@ -88,7 +89,9 @@ def consulta_compra():
     filtros_permitidos = {
         'id_produto': int,
         'id_compra': int,
-        'id_cliente': int
+        'id_cliente': int,
+        'data_inicial': datetime,
+        'data_final': datetime
     }
 
     # Limite máximo de itens por consulta
@@ -101,11 +104,16 @@ def consulta_compra():
             valor = data.get(chave)
             if valor is not None:
                 try:
-                    # Converte para o tipo apropriado e valida
-                    valor_convertido = type_cast(valor)
-                    if type_cast == int and valor_convertido < 1:
-                        raise ValueError
-                    filtros[chave] = valor_convertido
+                    if chave in ['data_inicial', 'data_final']:
+                        valor_convertido = datetime.fromisoformat(valor)
+                        filtros[chave] = valor_convertido
+                    else:
+                        # Converte para o tipo apropriado e valida
+                        valor_convertido = type_cast(valor)
+                        if type_cast == int and valor_convertido < 1:
+                            raise ValueError
+                        filtros[chave] = valor_convertido
+
                 except (ValueError, TypeError):
                     return jsonify({'error': f'O Campo {chave} deve ser um inteiro positivo'}), 400
 
@@ -113,6 +121,11 @@ def consulta_compra():
                 if 'id_compra' in filtros and len(filtros) > 1:
                     return jsonify(
                         {'error: "Quando id_compra é especificado, nenhum outro filtro pode ser aplicado'}), 400
+
+        # Validar se a data inicial não é maior que a final
+        if 'data_inicial' in filtros and 'data_final' in filtros:
+            if filtros['data_inicial'] > filtros['data_final']:
+                return jsonify({'error': 'data_inicio não pode ser posterior a data_fim'}), 400
 
     except Exception as e:
         return jsonify({'error': 'Erro na validação dos filtros'}), 400
@@ -123,7 +136,7 @@ def consulta_compra():
             compra = Compra.query.get_or_404(filtros['id_compra'])
             return jsonify(compra.to_dict()), 200
 
-        # Construção de query dinâmica para multiplos filtros
+        # Construção da query dinâmica para multiplos filtros
         query = Compra.query
 
         if 'id_cliente' in filtros:
@@ -139,8 +152,16 @@ def consulta_compra():
             )
             query = query.filter(Compra.id.in_(compra_ids))
 
+        if 'data_inicial' in filtros:
+            query = query.filter(Compra.data >= filtros['data_inicial'])
+        if 'data_final' in filtros:
+            query = query.filter(Compra.data <= filtros['data_final'])
+
         # Aplica limite de filtros
         compras = query.limit(MAX_ITENS).all()
+
+        dict_qtn_prod = []
+
 
         # Transforma o resultado em uma lista json
         return jsonify([compra.to_dict() for compra in compras]), 200
@@ -156,3 +177,34 @@ def deletar_compra(id_compra):
     db.session.commit()
 
     return jsonify({}), 200
+
+@compra_bp.route('/relatorio/vendas_por_produto', methods=['GET'])
+def relatorio_vendas_por_produto():
+    try:
+        # Consulta que soma a quantidade de cada produto vendido
+        resultados = (
+            CompraProduto.query
+            .join(Produto)
+            .group_by(CompraProduto.produto_id)
+            .with_entities(
+                CompraProduto.produto_id,
+                Produto.nome,
+                func.sum(CompraProduto.quantidade).label('quantidade_total')
+            )
+            .all()
+        )
+
+        # Formata o resultado como um dicionário
+        relatorio = [
+            {
+                'Produto_id': resultado.produto_id,
+                'Nome': resultado.nome,
+                'Quantidade_Total_Vendida': int(resultado.quantidade_total)
+            }
+            for resultado in resultados
+        ]
+
+        return jsonify(relatorio), 200
+
+    except Exception as e:
+        return jsonify({'error': 'Erro ao gerar relatório'}), 500
